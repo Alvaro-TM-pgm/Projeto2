@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lista de Alunos</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:30px}
+.container{max-width:600px;margin:auto;background:#fff;padding:25px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+h1{text-align:center}
+form{display:flex;gap:10px;margin-bottom:20px}
+input{flex:1;padding:10px;font-size:16px}
+button{padding:10px 18px;border:none;background:#111;color:#fff;border-radius:8px;cursor:pointer}
+button:hover{opacity:.9}
+ul{list-style:none;padding:0;margin:0;border:1px solid #ddd;border-radius:8px;overflow:hidden}
+li{padding:12px}
+li:nth-child(odd){background:#f9f9f9}
+li:nth-child(even){background:#eaeaea}
+.msg{margin-top:10px;color:#666;font-size:14px}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Lista de Alunos</h1>
+<form id="formulario">
+<input type="text" id="nome" placeholder="Digite o nome" required>
+<button type="submit">Salvar</button>
+</form>
+<ul id="lista"></ul>
+<div class="msg" id="msg"></div>
+</div>
+
+<script>
+const URL_API = 'COLE_AQUI_SUA_URL_DO_APPS_SCRIPT';
+const lista = document.getElementById('lista');
+const msg = document.getElementById('msg');
+
+async function carregarLista(){
+  msg.textContent='Carregando...';
+  const res = await fetch(URL_API);
+  const dados = await res.json();
+  renderizar(dados.lista || []);
+  msg.textContent='';
+}
+
+function renderizar(nomes){
+  lista.innerHTML='';
+  nomes.forEach(nome=>{
+    const li=document.createElement('li');
+    li.textContent=nome;
+    lista.appendChild(li);
+  });
+}
+
+document.getElementById('formulario').addEventListener('submit', async(e)=>{
+  e.preventDefault();
+  const nome = document.getElementById('nome').value.trim();
+  if(!nome)return;
+
+  msg.textContent='Salvando...';
+</html>
