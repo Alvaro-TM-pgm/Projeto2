@@ -1,61 +1,93 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Lista de Alunos</title>
-<style>
-body{font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:30px}
-.container{max-width:600px;margin:auto;background:#fff;padding:25px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.1)}
-h1{text-align:center}
-form{display:flex;gap:10px;margin-bottom:20px}
-input{flex:1;padding:10px;font-size:16px}
-button{padding:10px 18px;border:none;background:#111;color:#fff;border-radius:8px;cursor:pointer}
-button:hover{opacity:.9}
-ul{list-style:none;padding:0;margin:0;border:1px solid #ddd;border-radius:8px;overflow:hidden}
-li{padding:12px}
-li:nth-child(odd){background:#f9f9f9}
-li:nth-child(even){background:#eaeaea}
-.msg{margin-top:10px;color:#666;font-size:14px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Alunos</title>
+    <style>
+        body { font-family: sans-serif; max-width: 500px; margin: 40px auto; padding: 20px; }
+        .form-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        input { flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 8px 16px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 4px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f4f4f4; }
+        
+        /* Efeito Zebrado */
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        tr:nth-child(odd) { background-color: #ffffff; }
+    </style>
 </head>
 <body>
-<div class="container">
-<h1>Lista de Alunos</h1>
-<form id="formulario">
-<input type="text" id="nome" placeholder="Digite o nome" required>
-<button type="submit">Salvar</button>
-</form>
-<ul id="lista"></ul>
-<div class="msg" id="msg"></div>
-</div>
 
-<script>
-const URL_API = 'COLE_AQUI_SUA_URL_DO_APPS_SCRIPT';
-const lista = document.getElementById('lista');
-const msg = document.getElementById('msg');
+    <h2>Cadastro de Alunos</h2>
+    
+    <div class="form-group">
+        <input type="text" id="nomeAluno" placeholder="Digite o nome do aluno">
+        <button onclick="adicionarAluno()">Adicionar</button>
+    </div>
 
-async function carregarLista(){
-  msg.textContent='Carregando...';
-  const res = await fetch(URL_API);
-  const dados = await res.json();
-  renderizar(dados.lista || []);
-  msg.textContent='';
-}
+    <table>
+        <thead>
+            <tr>
+                <th>Nome do Aluno</th>
+            </tr>
+        </thead>
+        <tbody id="corpoTabela">
+            <!-- Lista será inserida aqui -->
+        </tbody>
+    </table>
 
-function renderizar(nomes){
-  lista.innerHTML='';
-  nomes.forEach(nome=>{
-    const li=document.createElement('li');
-    li.textContent=nome;
-    lista.appendChild(li);
-  });
-}
+    <script>
+        const API_URL = "SUA_URL_DO_APPS_SCRIPT";
 
-document.getElementById('formulario').addEventListener('submit', async(e)=>{
-  e.preventDefault();
-  const nome = document.getElementById('nome').value.trim();
-  if(!nome)return;
+        // Carrega a lista ao abrir a página
+        window.onload = buscarAlunos;
 
-  msg.textContent='Salvando...';
+        async function buscarAlunos() {
+            const tbody = document.getElementById('corpoTabela');
+            tbody.innerHTML = "<tr><td>Carregando...</td></tr>";
+            
+            try {
+                const response = await fetch(API_URL);
+                const alunos = await response.json();
+                
+                tbody.innerHTML = "";
+                alunos.forEach(nome => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${nome}</td>`;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error("Erro ao buscar:", error);
+                tbody.innerHTML = "<tr><td>Erro ao carregar lista.</td></tr>";
+            }
+        }
+
+        async function adicionarAluno() {
+            const input = document.getElementById('nomeAluno');
+            const nome = input.value.trim();
+            
+            if (!nome) return alert("Digite um nome!");
+
+            try {
+                // Usando modo 'no-cors' para envio simples se necessário, 
+                // mas Apps Script com JSON geralmente aceita fetch normal
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Evita problemas de pre-flight CORS
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome: nome })
+                });
+
+                input.value = "";
+                // Como 'no-cors' não retorna o body, aguardamos um pouco e atualizamos
+                setTimeout(buscarAlunos, 1000); 
+            } catch (error) {
+                console.error("Erro ao salvar:", error);
+            }
+        }
+    </script>
+</body>
 </html>
